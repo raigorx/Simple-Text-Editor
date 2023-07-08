@@ -5,32 +5,23 @@ function isValid(stale, latest, otjson) {
   
   cursor = 0
   
-  const Operations = {
-    skip: (opTrans) => {
+  for (const opTrans of otObject) {
+    if (opTrans.op === 'skip') {
       cursor += opTrans.count
       if (stale.at(cursor) === undefined) return false
-      return true
-    },
-    delete: (opTrans) => {
+    }
+    if (opTrans.op === 'delete') {
       if (stale.at(opTrans.count) === undefined) return false
       stale = stale.slice(0, cursor) + stale.slice(cursor + opTrans.count)
-      return true
-    },
-    insert: (opTrans) => {
+    }
+      
+    if (opTrans.op === 'insert'){
       stale = stale.slice(0, cursor) + opTrans.chars + stale.slice(cursor);
       cursor += opTrans.chars.length
-      return true
-    },
+    }
   }
   
-  earlyReturn = otObject.every((opTrans) => {
-    return Operations[opTrans.op](opTrans)
-  })
-  
-  if (!earlyReturn) return false
-  
   return stale === latest
-  
 }
 
 isValid(
